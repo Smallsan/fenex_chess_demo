@@ -1,0 +1,80 @@
+# Rust compilation outputs
+target/
+debug/
+release/
+*.pdb
+
+# Cargo
+Cargo.lock
+
+# WASM build outputs
+pkg/
+wasm-pack.log
+
+# Node.js (if using npm for any tooling)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build artifacts
+*.wasm
+dist/
+build/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Coverage reports
+coverage/
+*.lcov
+
+# Documentation builds
+docs/target/
+
+# Rust analyzer
+rust-project.json
+
+# wasm-bindgen generated files (if not tracking them)
+# Uncomment these if you don't want to track generated JS/TS files
+# *.js (but be careful, this might ignore your actual JS files)
+# *.d.ts
