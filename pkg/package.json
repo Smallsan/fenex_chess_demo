@@ -1,0 +1,22 @@
+{
+  "name": "fenex-chess-demo",
+  "type": "module",
+  "collaborators": [
+    "Small San <DefinitelyNotSmallSan@gmail.com>"
+  ],
+  "description": "Interactive web demo for the Fenex chess library",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Smallsan/fenex-chess-demo"
+  },
+  "files": [
+    "fenex_chess_demo_bg.wasm",
+    "fenex_chess_demo.js"
+  ],
+  "main": "fenex_chess_demo.js",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
