@@ -26,9 +26,9 @@ dependencies = [
 
 [[package]]
 name = "fenex"
-version = "0.1.7"
+version = "0.1.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e3e1022e8b209439b3701d218a237df6eadad7ed7174687d176296bd31ec43fe"
+checksum = "810fbb9c4ce7298a1dc0f70ce58fa9184a9649dfcfd2704ea70d3c5dde063073"
 
 [[package]]
 name = "fenex-chess-demo"
