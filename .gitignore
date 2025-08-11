@@ -4,11 +4,11 @@ debug/
 release/
 *.pdb
 
-# Cargo
-Cargo.lock
+# Cargo (but keep Cargo.lock for reproducible builds)
+# Cargo.lock
 
-# WASM build outputs
-pkg/
+# WASM build outputs (but we need pkg/ for GitHub Pages)
+# pkg/
 wasm-pack.log
 
 # Node.js (if using npm for any tooling)
