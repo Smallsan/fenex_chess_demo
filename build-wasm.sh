@@ -12,7 +12,7 @@ fi
 
 # Build WASM module
 echo "🔧 Compiling Rust to WASM..."
-wasm-pack build --target web --out-dir docs/pkg --no-typescript
+wasm-pack build --target web --out-dir pkg --no-typescript
 
 if [ $? -eq 0 ]; then
     echo "✅ WASM build successful!"
