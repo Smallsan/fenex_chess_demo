@@ -269,11 +269,64 @@ impl ChessGame {
             return false;
         }
 
-        // For now, apply the move normally as fenex may handle promotion automatically
-        // In the future, we can extend this to specify the promotion piece
-        match self.board.apply_move(from_coords, to_coords) {
+        // Check if fenex 0.1.10 has updated promotion handling
+        console_log!("Using fenex 0.1.10 - attempting to use promotion piece: {}", promotion_piece);
+        
+        // Try to find a promotion move in the legal moves that matches our desired piece
+        let legal_moves = self.board.generate_legal_moves();
+        
+        // Look for promotion moves from this position
+        let mut found_promotion = false;
+        for (from, to) in &legal_moves {
+            if *from == from_coords && *to == to_coords {
+                console_log!("Found matching legal move for promotion");
+                found_promotion = true;
+                break;
+            }
+        }
+        
+        if !found_promotion {
+            console_log!("No legal promotion move found");
+            return false;
+        }
+        
+        console_log!("Using fenex 0.1.10 specific promotion methods");
+        
+        // Use fenex 0.1.10 specific promotion methods
+        let result = match promotion_piece.to_lowercase().as_str() {
+            "queen" => {
+                console_log!("Promoting to Queen");
+                self.board.promote_to_queen(from_coords, to_coords)
+            },
+            "rook" => {
+                console_log!("Promoting to Rook");
+                self.board.promote_to_rook(from_coords, to_coords)
+            },
+            "bishop" => {
+                console_log!("Promoting to Bishop");
+                self.board.promote_to_bishop(from_coords, to_coords)
+            },
+            "knight" => {
+                console_log!("Promoting to Knight");
+                self.board.promote_to_knight(from_coords, to_coords)
+            },
+            _ => {
+                console_log!("Unknown piece type, defaulting to Queen");
+                self.board.promote_to_queen(from_coords, to_coords)
+            }
+        };
+        
+        match result {
             Ok(_) => {
-                console_log!("Promotion move successful!");
+                console_log!("Promotion move successful! (using fenex 0.1.10 specific methods)");
+                
+                // Log what piece is actually at the destination after the move
+                if let Some(piece) = self.board.get(to_coords) {
+                    console_log!("Promoted piece is: {:?} {:?}", piece.color, piece.piece_type);
+                    console_log!("SUCCESS: Promoted to {:?}!", piece.piece_type);
+                } else {
+                    console_log!("WARNING: No piece found at promotion square after move");
+                }
 
                 // Check if the move resulted in check
                 if self.board.is_in_check() {

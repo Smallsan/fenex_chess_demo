@@ -11,7 +11,7 @@ license = "MIT"
 crate-type = ["cdylib"]
 
 [dependencies]
-fenex = "0.1.9"  # Use the latest version from crates.io
+fenex = "0.1.10"  # Use the latest version with promotion fixes
 wasm-bindgen = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 serde-wasm-bindgen = "0.4"
