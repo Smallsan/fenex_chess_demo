@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#667eea">
     <title>Fenex Chess - Interactive Demo</title>
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -86,8 +89,35 @@
                         <button class="btn btn-small example-btn" data-fen="r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/3P1N2/PPP2PPP/RNBQK2R w KQkq - 4 4">Italian Game</button>
                         <button class="btn btn-small example-btn" data-fen="rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2">Queen's Pawn</button>
                         <button class="btn btn-small example-btn" data-fen="r1bq1rk1/ppp2ppp/2np1n2/2b1p3/2B1P3/3P1N2/PPP2PPP/RNBQ1RK1 w - - 6 6">Castled Position</button>
+                        <button class="btn btn-small example-btn" data-fen="8/P7/8/8/8/8/p7/8 w - - 0 1">Promotion Test</button>
                         <button class="btn btn-small example-btn" data-fen="8/8/8/4k3/8/8/4K3/8 w - - 0 1">King Endgame</button>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Promotion Dialog -->
+        <div id="promotion-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <h3>Choose Promotion Piece</h3>
+                <p>Your pawn can be promoted to:</p>
+                <div class="promotion-choices">
+                    <button class="promotion-btn" data-piece="queen">
+                        <span class="promotion-piece">♕</span>
+                        <span class="promotion-label">Queen</span>
+                    </button>
+                    <button class="promotion-btn" data-piece="rook">
+                        <span class="promotion-piece">♖</span>
+                        <span class="promotion-label">Rook</span>
+                    </button>
+                    <button class="promotion-btn" data-piece="bishop">
+                        <span class="promotion-piece">♗</span>
+                        <span class="promotion-label">Bishop</span>
+                    </button>
+                    <button class="promotion-btn" data-piece="knight">
+                        <span class="promotion-piece">♘</span>
+                        <span class="promotion-label">Knight</span>
+                    </button>
                 </div>
             </div>
         </div>

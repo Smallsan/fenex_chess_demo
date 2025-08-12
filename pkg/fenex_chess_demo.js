@@ -148,14 +148,14 @@ function debugString(val) {
     return className;
 }
 
-export function main() {
-    wasm.main();
-}
-
 function takeFromExternrefTable0(idx) {
     const value = wasm.__wbindgen_export_3.get(idx);
     wasm.__externref_table_dealloc(idx);
     return value;
+}
+
+export function main() {
+    wasm.main();
 }
 
 const ChessGameFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -244,11 +244,69 @@ export class ChessGame {
         const ret = wasm.chessgame_make_move(this.__wbg_ptr, from_row, from_col, to_row, to_col);
         return ret !== 0;
     }
+    /**
+     * @param {number} from_row
+     * @param {number} from_col
+     * @param {number} to_row
+     * @param {number} to_col
+     * @param {string} promotion_piece
+     * @returns {boolean}
+     */
+    make_promotion_move(from_row, from_col, to_row, to_col, promotion_piece) {
+        const ptr0 = passStringToWasm0(promotion_piece, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.chessgame_make_promotion_move(this.__wbg_ptr, from_row, from_col, to_row, to_col, ptr0, len0);
+        return ret !== 0;
+    }
+    /**
+     * @param {number} from_row
+     * @param {number} from_col
+     * @param {number} to_row
+     * @param {number} to_col
+     * @returns {boolean}
+     */
+    is_promotion_move(from_row, from_col, to_row, to_col) {
+        const ret = wasm.chessgame_is_promotion_move(this.__wbg_ptr, from_row, from_col, to_row, to_col);
+        return ret !== 0;
+    }
     reset() {
         wasm.chessgame_reset(this.__wbg_ptr);
     }
-    display() {
-        wasm.chessgame_display(this.__wbg_ptr);
+    /**
+     * @param {string} fen
+     * @returns {any}
+     */
+    debug_check_moves(fen) {
+        const ptr0 = passStringToWasm0(fen, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.chessgame_debug_check_moves(this.__wbg_ptr, ptr0, len0);
+        return ret;
+    }
+    /**
+     * @param {number} from_x
+     * @param {number} from_y
+     * @param {number} to_x
+     * @param {number} to_y
+     * @returns {any}
+     */
+    test_specific_check_move(from_x, from_y, to_x, to_y) {
+        const ret = wasm.chessgame_test_specific_check_move(this.__wbg_ptr, from_x, from_y, to_x, to_y);
+        return ret;
+    }
+    /**
+     * @returns {string}
+     */
+    load_check_test_position() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.chessgame_load_check_test_position(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+        }
     }
 }
 

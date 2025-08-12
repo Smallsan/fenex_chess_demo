@@ -13,9 +13,11 @@
   },
   "files": [
     "fenex_chess_demo_bg.wasm",
-    "fenex_chess_demo.js"
+    "fenex_chess_demo.js",
+    "fenex_chess_demo.d.ts"
   ],
   "main": "fenex_chess_demo.js",
+  "types": "fenex_chess_demo.d.ts",
   "sideEffects": [
     "./snippets/*"
   ]

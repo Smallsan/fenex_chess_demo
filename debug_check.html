@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Check Moves - Fenex Chess</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 20px;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .debug-section {
+            background: #2d2d2d;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+            font-family: inherit;
+        }
+        button:hover {
+            background: #005a99;
+        }
+        .console-output {
+            background: #000;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        .chessboard {
+            display: inline-grid;
+            grid-template-columns: repeat(8, 50px);
+            grid-template-rows: repeat(8, 50px);
+            border: 2px solid #666;
+            margin: 20px;
+        }
+        .square {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+        }
+        .square.light { background-color: #f0d9b5; color: #000; }
+        .square.dark { background-color: #b58863; color: #000; }
+        .square.valid-move { 
+            background-color: #90EE90 !important; 
+            border: 2px solid #006400;
+            box-shadow: inset 0 0 10px rgba(0,100,0,0.5);
+        }
+        .square.selected { 
+            background-color: #FFD700 !important; 
+            border: 2px solid #FFA500;
+        }
+        .coordinates {
+            font-size: 10px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            opacity: 0.6;
+        }
+        .info {
+            background: #004488;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug Check Moves Issue</h1>
+        <p>This page tests check-giving moves to identify where the issue occurs.</p>
+
+        <div class="debug-section">
+            <h2>WASM Status</h2>
+            <div id="wasm-status">Loading WASM...</div>
+            <button onclick="initializeGame()">Re-initialize WASM</button>
+        </div>
+
+        <div class="debug-section">
+            <h2>Quick Tests</h2>
+            <button onclick="loadTestPosition()">Load Italian Game (Bxf7+ possible)</button>
+            <button onclick="testBxf7Check()">Test Bxf7+ Move</button>
+            <button onclick="debugAllCheckMoves()">Find All Check-Giving Moves</button>
+            <button onclick="testCoordinateConversion()">Test Coordinate Conversion</button>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+
+        <div class="debug-section">
+            <h2>Interactive Board</h2>
+            <div class="info" id="board-info">Click a piece to see its valid moves</div>
+            <div id="chessboard" class="chessboard"></div>
+        </div>
+
+        <div class="debug-section">
+            <h2>Console Output</h2>
+            <div id="console-output" class="console-output">Console output will appear here...</div>
+        </div>
+
+        <div class="debug-section">
+            <h2>Current Position</h2>
+            <textarea id="fen-display" style="width: 100%; height: 60px; font-family: monospace;"></textarea>
+            <button onclick="loadCustomFen()">Load Custom FEN</button>
+        </div>
+    </div>
+
+    <script type="module">
+        let game = null;
+        let selectedSquare = null;
+        let validMoves = [];
+
+        // Piece symbols
+        const PIECE_SYMBOLS = {
+            'WhitePawn': '♙', 'WhiteRook': '♖', 'WhiteKnight': '♘', 
+            'WhiteBishop': '♗', 'WhiteQueen': '♕', 'WhiteKing': '♔',
+            'BlackPawn': '♟︎', 'BlackRook': '♜', 'BlackKnight': '♞', 
+            'BlackBishop': '♝', 'BlackQueen': '♛', 'BlackKing': '♚'
+        };
+
+        // Override console.log to capture WASM output
+        const originalLog = console.log;
+        console.log = function(...args) {
+            const output = document.getElementById('console-output');
+            const message = args.join(' ');
+            output.textContent += new Date().toLocaleTimeString() + ': ' + message + '\\n';
+            output.scrollTop = output.scrollHeight;
+            originalLog.apply(console, args);
+        };
+
+        async function initializeGame() {
+            const statusDiv = document.getElementById('wasm-status');
+            
+            try {
+                statusDiv.textContent = 'Loading WASM module...';
+                const wasm = await import('./pkg/fenex_chess_demo.js');
+                await wasm.default();
+                
+                game = new wasm.ChessGame();
+                statusDiv.textContent = '✅ WASM loaded successfully!';
+                statusDiv.style.color = '#90EE90';
+                
+                console.log('WASM initialized successfully');
+                updateDisplay();
+                return true;
+            } catch (error) {
+                statusDiv.textContent = '❌ Failed to load WASM: ' + error.message;
+                statusDiv.style.color = '#FF6B6B';
+                console.log('WASM initialization failed:', error);
+                return false;
+            }
+        }
+
+        function createBoard() {
+            const chessboard = document.getElementById('chessboard');
+            chessboard.innerHTML = '';
+
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(row + col) % 2 === 0 ? 'light' : 'dark'}`;
+                    square.dataset.row = row;
+                    square.dataset.col = col;
+                    square.onclick = () => handleSquareClick(row, col);
+                    
+                    // Add coordinates for debugging
+                    const coords = document.createElement('div');
+                    coords.className = 'coordinates';
+                    coords.textContent = String.fromCharCode(97 + col) + (8 - row);
+                    square.appendChild(coords);
+                    
+                    chessboard.appendChild(square);
+                }
+            }
+        }
+
+        function updateDisplay() {
+            if (!game) return;
+            
+            const gameState = game.get_game_state();
+            const squares = document.querySelectorAll('.square');
+            
+            squares.forEach((square, index) => {
+                const row = Math.floor(index / 8);
+                const col = index % 8;
+                
+                // Clear previous styling
+                square.classList.remove('selected', 'valid-move', 'has-piece');
+                
+                // Remove existing piece text (but keep coordinates)
+                const coords = square.querySelector('.coordinates');
+                square.innerHTML = '';
+                square.appendChild(coords);
+                
+                // Add piece if present
+                const piece = gameState.board[row][col];
+                if (piece) {
+                    const pieceSpan = document.createElement('span');
+                    pieceSpan.textContent = PIECE_SYMBOLS[piece] || '?';
+                    pieceSpan.style.fontSize = '24px';
+                    square.appendChild(pieceSpan);
+                    square.classList.add('has-piece');
+                }
+                
+                // Highlight selected square
+                if (selectedSquare && selectedSquare.row === row && selectedSquare.col === col) {
+                    square.classList.add('selected');
+                }
+                
+                // Highlight valid moves
+                if (validMoves.some(move => move.to_row === row && move.to_col === col)) {
+                    square.classList.add('valid-move');
+                }
+            });
+
+            // Update FEN display
+            document.getElementById('fen-display').value = game.get_fen();
+            
+            // Update board info
+            const info = document.getElementById('board-info');
+            if (selectedSquare) {
+                info.textContent = `Selected: ${String.fromCharCode(97 + selectedSquare.col)}${8 - selectedSquare.row} (${validMoves.length} valid moves)`;
+            } else {
+                info.textContent = 'Click a piece to see its valid moves';
+            }
+        }
+
+        function handleSquareClick(row, col) {
+            if (!game) return;
+            
+            console.log(`Clicked square: row=${row}, col=${col} (${String.fromCharCode(97 + col)}${8 - row})`);
+            
+            const gameState = game.get_game_state();
+            
+            // If clicking on a valid move
+            if (selectedSquare && validMoves.some(move => move.to_row === row && move.to_col === col)) {
+                console.log(`Attempting move from (${selectedSquare.row},${selectedSquare.col}) to (${row},${col})`);
+                
+                const success = game.make_move(selectedSquare.row, selectedSquare.col, row, col);
+                console.log(`Move result: ${success}`);
+                
+                selectedSquare = null;
+                validMoves = [];
+                updateDisplay();
+                return;
+            }
+            
+            // If clicking on a piece
+            const piece = gameState.board[row][col];
+            if (piece) {
+                console.log(`Selected piece: ${piece} at (${row},${col})`);
+                selectedSquare = { row, col };
+                
+                // Get valid moves using WASM function
+                validMoves = game.get_valid_moves(row, col);
+                console.log(`Found ${validMoves.length} valid moves for ${piece}`);
+                
+                // Log some moves for debugging
+                validMoves.slice(0, 5).forEach((move, i) => {
+                    console.log(`  Move ${i+1}: to (${move.to_row},${move.to_col})`);
+                });
+                
+                updateDisplay();
+            } else {
+                // Clear selection
+                selectedSquare = null;
+                validMoves = [];
+                updateDisplay();
+            }
+        }
+
+        // Debug functions
+        window.loadTestPosition = function() {
+            if (!game) { console.log('Game not initialized'); return; }
+            console.log('=== LOADING TEST POSITION ===');
+            const result = game.load_check_test_position();
+            console.log('Load result:', result);
+            updateDisplay();
+        };
+
+        window.testBxf7Check = function() {
+            if (!game) { console.log('Game not initialized'); return; }
+            console.log('=== TESTING Bxf7+ MOVE ===');
+            // Test move from c4 (3,4) to f7 (6,7) in Fenex coordinates
+            const result = game.test_specific_check_move(3, 4, 6, 7);
+            console.log('Bxf7+ test result:', result);
+        };
+
+        window.debugAllCheckMoves = function() {
+            if (!game) { console.log('Game not initialized'); return; }
+            console.log('=== DEBUGGING ALL CHECK MOVES ===');
+            const currentFen = game.get_fen();
+            const result = game.debug_check_moves(currentFen);
+            console.log('Check moves debug result:', result);
+        };
+
+        window.testCoordinateConversion = function() {
+            console.log('=== COORDINATE CONVERSION TEST ===');
+            console.log('JavaScript uses 0-indexed coordinates (0-7)');
+            console.log('Fenex engine uses 1-indexed coordinates (1-8)');
+            console.log('');
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    const algebraic = String.fromCharCode(97 + col) + (8 - row);
+                    const fenex_x = col + 1;
+                    const fenex_y = 8 - row;
+                    console.log(`JS(${row},${col}) -> ${algebraic} -> Fenex(${fenex_x},${fenex_y})`);
+                    if (col >= 3) break; // Just show a few examples
+                }
+                if (row >= 3) break;
+            }
+        };
+
+        window.loadCustomFen = function() {
+            if (!game) { console.log('Game not initialized'); return; }
+            const fen = document.getElementById('fen-display').value.trim();
+            if (!fen) return;
+            
+            console.log('Loading custom FEN:', fen);
+            try {
+                const newGame = game.constructor.from_fen(fen);
+                game = newGame;
+                console.log('Custom FEN loaded successfully');
+                selectedSquare = null;
+                validMoves = [];
+                updateDisplay();
+            } catch (error) {
+                console.log('Failed to load FEN:', error);
+            }
+        };
+
+        window.clearConsole = function() {
+            document.getElementById('console-output').textContent = '';
+        };
+
+        window.initializeGame = initializeGame;
+
+        // Initialize when page loads
+        createBoard();
+        initializeGame();
+    </script>
+</body>
+</html>
